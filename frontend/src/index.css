@@ -13,3 +13,13 @@
 ::-webkit-scrollbar{
   @apply hidden
 }
+
+@media (max-width: 740px) {
+  .active p {
+    background-color: #7c3aed; /* Tailwind purple-600 */
+    color: white;
+    display: block;
+  }
+}
+
+

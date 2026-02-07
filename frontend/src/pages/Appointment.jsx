@@ -1,15 +1,24 @@
 import React, { useContext, useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
 import { assets } from '../assets/assets'
 import RelatedDoctors from '../components/RelatedDoctors'
+import { toast } from 'react-toastify'
+import axios from 'axios'
 
 
 const Appointment = () => {
 
   const {docId} = useParams()
-  const {doctors, currencySymbol} = useContext(AppContext)
+  const { doctors, currencySymbol, token, getDoctorsData } =
+  useContext(AppContext)
+
+const backendUrl = "http://localhost:4000";
+
+  
   const daysOfWeek = ['SUN','MON','TUE','WED','THU','FRI','SAT']
+
+  const navigate = useNavigate()
 
   const [docInfo,setDocInfo] = useState(null)
   const [docSlots,setDocSlots] = useState([])
@@ -69,6 +78,49 @@ const Appointment = () => {
        }
 
       }
+
+     const bookAppointment = async () => {
+
+  if (!token) {
+    toast.warn("Login to book appointment");
+    return navigate("/login");
+  }
+
+  if (!slotTime) {
+    toast.warn("Please select a time slot");
+    return;
+  }
+
+  // 🔹 CREATE FAKE PRESCRIPTION
+  const prescription = {
+    doctorName: docInfo.name,
+    speciality: docInfo.speciality,
+    date: new Date().toLocaleDateString(),
+    time: slotTime,
+    medicines: [
+      { name: "Paracetamol", dosage: "500mg", duration: "5 days" },
+      { name: "Amoxicillin", dosage: "250mg", duration: "7 days" },
+    ],
+    notes: "Drink plenty of water and take rest.",
+  };
+
+  // 🔹 SAVE TO LOCAL STORAGE
+  const oldPrescriptions =
+    JSON.parse(localStorage.getItem("prescriptions")) || [];
+
+  localStorage.setItem(
+    "prescriptions",
+    JSON.stringify([...oldPrescriptions, prescription])
+  );
+
+  toast.success("Appointment booked successfully ");
+
+  setTimeout(() => {
+    navigate("/my-appointments");
+  }, 800);
+};
+
+
 
 
 
@@ -141,7 +193,7 @@ const Appointment = () => {
            </p>
           ))}
         </div>
-        <button className='text-white text-sm font-light px-14 py-3 rounded-full my-6'   style={{ backgroundColor: '#696FC7' }}  >Book an appointment</button>
+        <button  onClick={bookAppointment} className='text-white text-sm font-light px-14 py-3 rounded-full my-6'   style={{ backgroundColor: '#696FC7' }}  >Book an appointment</button>
 
       </div>
 
